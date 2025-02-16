@@ -14,7 +14,7 @@ client.connect((SERVER_IP, PORT))
 DB_CONFIG_CLIENTE = {
     "host": "localhost",
     "user": "root",
-    "password": "277353",
+    "password": "@password27",
     "database": "chat_cliente"
 }
 
@@ -25,7 +25,7 @@ try:
 except mysql.connector.Error as e:
     print(f"[ERROR] No se pudo conectar a la base de datos del cliente: {e}")
 
-# Función para recibir mensajes del servidor
+# Recibir mensajes del servidor
 def receive_messages():
     while True:
         try:
@@ -36,12 +36,10 @@ def receive_messages():
             update_chat("[DESCONECTADO] Conexión perdida")
             break
 
-# Función para actualizar la interfaz con mensajes
 def update_chat(message):
     chat_area.insert(tk.END, message + "\n")
     chat_area.yview(tk.END)
 
-# Función para enviar mensajes
 def send_message():
     message = msg_entry.get()
     if message:
@@ -49,20 +47,16 @@ def send_message():
         update_chat(f"Tú: {message}")
     msg_entry.delete(0, tk.END)
 
-# Función para buscar un nombre en la base de datos del Cliente
 def buscar_nombre():
     nombre = simpledialog.askstring("Buscar Usuario", "Ingrese el nombre:")
     if nombre:
         cursor_cliente.execute("SELECT nombre, apellido FROM usuarios WHERE nombre = %s", (nombre,))
         resultado = cursor_cliente.fetchone()
         if resultado:
-            respuesta = f"[CLIENTE] Encontrado en la BD Local: {resultado[0]} {resultado[1]}"
-            update_chat(respuesta)
-
-            # Preguntar si se desea enviar al Servidor
-            enviar_al_servidor = tk.messagebox.askyesno("Enviar al Servidor", "¿Deseas enviar este resultado al servidor?")
-            if enviar_al_servidor:
-                client.send(f"BUSCAR:{nombre}".encode('utf-8'))  # Envía la consulta al servidor
+            encontrado = f"{resultado[0]} {resultado[1]}"
+            update_chat(f"[CLIENTE] Encontrado en la BD Local: {encontrado}")
+            msg_entry.delete(0, tk.END)  # Rellena el campo de texto con el nombre encontrado
+            msg_entry.insert(0, encontrado)
         else:
             update_chat("[CLIENTE] No encontrado en la BD Local")
 

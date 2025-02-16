@@ -25,7 +25,7 @@ try:
 except mysql.connector.Error as e:
     print(f"[ERROR] No se pudo conectar a la base de datos: {e}")
 
-# Función para manejar los clientes
+# Manejo de clientes
 def handle_client(client_socket, address):
     print(f"[NUEVA CONEXIÓN] Cliente conectado desde {address}")
     update_chat(f"Cliente conectado: {address}")
@@ -39,7 +39,7 @@ def handle_client(client_socket, address):
             print(f"[MENSAJE RECIBIDO] {address}: {message}")
             update_chat(f"{address}: {message}")
 
-            # Si el cliente pide un nombre, hacer una búsqueda en la BD
+            # Si el cliente busca un nombre en la BD del servidor
             if message.startswith("BUSCAR:"):
                 nombre_buscado = message.replace("BUSCAR:", "").strip()
                 cursor.execute("SELECT nombre, apellido FROM usuarios WHERE nombre = %s", (nombre_buscado,))
@@ -78,37 +78,36 @@ def start_server():
         thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
         thread.start()
 
-# Función para actualizar la interfaz con nuevos mensajes
+# Interfaz gráfica
 def update_chat(message):
     chat_area.insert(tk.END, message + "\n")
     chat_area.yview(tk.END)
 
-# Función para enviar mensajes desde el servidor
 def send_message():
     message = msg_entry.get()
     if message:
         update_chat(f"Servidor: {message}")
-
-        # Enviar mensaje a todos los clientes
         for client in clients:
             try:
                 client.send(f"Servidor: {message}".encode('utf-8'))
             except:
-                print(f"[ERROR] No se pudo enviar mensaje a un cliente.")
+                print("[ERROR] No se pudo enviar el mensaje")
     msg_entry.delete(0, tk.END)
 
-# Función para buscar un nombre en la base de datos
 def buscar_nombre():
     nombre = simpledialog.askstring("Buscar Usuario", "Ingrese el nombre:")
     if nombre:
         cursor.execute("SELECT nombre, apellido FROM usuarios WHERE nombre = %s", (nombre,))
         resultado = cursor.fetchone()
         if resultado:
-            update_chat(f"[SERVIDOR] Encontrado: {resultado[0]} {resultado[1]}")
+            encontrado = f"{resultado[0]} {resultado[1]}"
+            update_chat(f"[SERVIDOR] Encontrado: {encontrado}")
+            msg_entry.delete(0, tk.END)  # Rellena el campo de texto con el nombre encontrado
+            msg_entry.insert(0, encontrado)
         else:
             update_chat("[SERVIDOR] No encontrado")
 
-# Interfaz gráfica del Servidor
+# Interfaz del Servidor
 root = tk.Tk()
 root.title("Servidor de Chat")
 root.geometry("800x500")
