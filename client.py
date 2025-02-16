@@ -5,16 +5,16 @@ from tkinter import scrolledtext, simpledialog
 import mysql.connector
 
 # Configuración del Cliente
-SERVER_IP = "192.168.0.18"  # IP del servidor
+SERVER_IP = "192.168.0.18"  # IP del servidor (ajusta según tu red)
 PORT = 5000
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((SERVER_IP, PORT))
 
-# Conexión a la base de datos del Cliente
+# Configuración de la base de datos del Cliente
 DB_CONFIG_CLIENTE = {
     "host": "localhost",
     "user": "root",
-    "password": "@password27",
+    "password": "277353",
     "database": "chat_cliente"
 }
 
@@ -25,7 +25,7 @@ try:
 except mysql.connector.Error as e:
     print(f"[ERROR] No se pudo conectar a la base de datos del cliente: {e}")
 
-# Recibir mensajes del servidor
+# Función para recibir mensajes del servidor
 def receive_messages():
     while True:
         try:
@@ -36,10 +36,12 @@ def receive_messages():
             update_chat("[DESCONECTADO] Conexión perdida")
             break
 
+# Función para actualizar la interfaz con mensajes
 def update_chat(message):
     chat_area.insert(tk.END, message + "\n")
     chat_area.yview(tk.END)
 
+# Función para enviar mensajes
 def send_message():
     message = msg_entry.get()
     if message:
@@ -47,10 +49,22 @@ def send_message():
         update_chat(f"Tú: {message}")
     msg_entry.delete(0, tk.END)
 
+# Función para buscar un nombre en la base de datos del Cliente
 def buscar_nombre():
     nombre = simpledialog.askstring("Buscar Usuario", "Ingrese el nombre:")
     if nombre:
-        client.send(f"BUSCAR:{nombre}".encode('utf-8'))
+        cursor_cliente.execute("SELECT nombre, apellido FROM usuarios WHERE nombre = %s", (nombre,))
+        resultado = cursor_cliente.fetchone()
+        if resultado:
+            respuesta = f"[CLIENTE] Encontrado en la BD Local: {resultado[0]} {resultado[1]}"
+            update_chat(respuesta)
+
+            # Preguntar si se desea enviar al Servidor
+            enviar_al_servidor = tk.messagebox.askyesno("Enviar al Servidor", "¿Deseas enviar este resultado al servidor?")
+            if enviar_al_servidor:
+                client.send(f"BUSCAR:{nombre}".encode('utf-8'))  # Envía la consulta al servidor
+        else:
+            update_chat("[CLIENTE] No encontrado en la BD Local")
 
 # Interfaz del Cliente
 root = tk.Tk()
