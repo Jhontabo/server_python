@@ -10,7 +10,7 @@ PORT = 5000
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((SERVER_IP, PORT))
 
-# Configuración de la base de datos del Cliente
+# Conexión a la base de datos del Cliente
 DB_CONFIG_CLIENTE = {
     "host": "localhost",
     "user": "root",
@@ -25,30 +25,21 @@ try:
 except mysql.connector.Error as e:
     print(f"[ERROR] No se pudo conectar a la base de datos del cliente: {e}")
 
-# Función para recibir mensajes del servidor
+# Recibir mensajes del servidor
 def receive_messages():
     while True:
         try:
             message = client.recv(1024).decode('utf-8')
             if message:
                 update_chat(message)
-
-                # Si el mensaje es una respuesta de búsqueda, guardarlo en la BD
-                if message.startswith("[SERVIDOR] Encontrado:"):
-                    _, nombre, apellido = message.split(":")[1].strip().split()
-                    cursor_cliente.execute("INSERT INTO usuarios (nombre, apellido) VALUES (%s, %s)", (nombre, apellido))
-                    conn_cliente.commit()
-
         except:
             update_chat("[DESCONECTADO] Conexión perdida")
             break
 
-# Función para actualizar la interfaz con mensajes
 def update_chat(message):
     chat_area.insert(tk.END, message + "\n")
     chat_area.yview(tk.END)
 
-# Función para enviar mensajes
 def send_message():
     message = msg_entry.get()
     if message:
@@ -56,13 +47,12 @@ def send_message():
         update_chat(f"Tú: {message}")
     msg_entry.delete(0, tk.END)
 
-# Función para buscar nombres y enviarlos al servidor
 def buscar_nombre():
     nombre = simpledialog.askstring("Buscar Usuario", "Ingrese el nombre:")
     if nombre:
         client.send(f"BUSCAR:{nombre}".encode('utf-8'))
 
-# Interfaz gráfica del Cliente
+# Interfaz del Cliente
 root = tk.Tk()
 root.title("Cliente de Chat")
 root.geometry("800x500")
