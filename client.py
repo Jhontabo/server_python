@@ -41,7 +41,6 @@ def conectar_servidor():
         conectado = True
         print("[INFO] Conectado al servidor correctamente.")
 
-        # Asegurar que Tkinter no esté destruido antes de mostrar mensaje
         if root.winfo_exists():
             messagebox.showinfo("Conexión Exitosa", "Conectado al servidor correctamente.")
 
@@ -56,7 +55,6 @@ def conectar_servidor():
         conectado = False
         print(f"[ERROR] No se pudo conectar al servidor: {e}")
 
-        # Asegurar que la ventana de Tkinter aún existe antes de mostrar el mensaje
         if root.winfo_exists():
             messagebox.showerror("Error de Conexión", "No se pudo conectar al servidor. Verifique que esté en línea.")
 
@@ -71,6 +69,13 @@ def receive_messages():
             message = client.recv(1024).decode('utf-8')
             if message:
                 update_chat(message)
+                
+                # Si el mensaje viene del servidor con un nombre encontrado, insertarlo en msg_entry
+                if message.startswith("[SERVIDOR] Encontrado:"):
+                    nombre_encontrado = message.replace("[SERVIDOR] Encontrado:", "").strip()
+                    msg_entry.delete(0, tk.END)
+                    msg_entry.insert(0, nombre_encontrado)
+
         except:
             update_chat("[DESCONECTADO] Conexión perdida")
             conectado = False
@@ -105,6 +110,8 @@ def buscar_nombre():
         if resultado_local:
             encontrado_local = f"{resultado_local[0]} {resultado_local[1]}"
             update_chat(f"[CLIENTE] Encontrado en la BD Local: {encontrado_local}")
+            msg_entry.delete(0, tk.END)  # Limpiar la caja de texto
+            msg_entry.insert(0, encontrado_local)  # Insertar el nombre en el campo de entrada
         else:
             update_chat("[CLIENTE] No encontrado en la BD Local")
 
