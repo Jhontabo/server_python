@@ -12,25 +12,35 @@ def start_client():
         print("1. Add")
         print("2. Subtract")
         print("3. Multiply")
-        print("4. Exit")
+        print("4. Divide")
+        print("5. Exit")
         choice = input("Choose an option: ")
 
-        if choice == "4":
+        if choice == "5":
             print("Exiting...")
             break
 
         polyA = read_polynomial("Enter first polynomial:")
-        polyB = read_polynomial("Enter second polynomial:")
 
-        if choice == "1":
-            result = polynomial.add(polyA, polyB)
-            print("Result of Addition:", result)
-        elif choice == "2":
-            result = polynomial.subtract(polyA, polyB)
-            print("Result of Subtraction:", result)
-        elif choice == "3":
-            result = polynomial.multiply(polyA, polyB)
-            print("Result of Multiplication:", result)
+        if choice in ["1", "2", "3"]:
+            polyB = read_polynomial("Enter second polynomial:")
+            if choice == "1":
+                result = polynomial.add(polyA, polyB)
+                print("Result of Addition:", result)
+            elif choice == "2":
+                result = polynomial.subtract(polyA, polyB)
+                print("Result of Subtraction:", result)
+            elif choice == "3":
+                result = polynomial.multiply(polyA, polyB)
+                print("Result of Multiplication:", result)
+        elif choice == "4":
+            polyB = read_polynomial("Enter divisor polynomial:")
+            if len(polyB) == 0 or (len(polyB) == 1 and polyB[0] == 0):
+                print("Error: Division by zero is not allowed.")
+            else:
+                quotient, remainder = polynomial.divide(polyA, polyB)
+                print("Quotient:", quotient)
+                print("Remainder:", remainder)
         else:
             print("Invalid option. Try again.")
 
