@@ -1,6 +1,6 @@
 import Pyro4
 
-@Pyro4.expose
+@Pyro4.expose  # Expone la clase para que Pyro4 pueda acceder a sus métodos
 class Polynomial:
     def add(self, pA, pB):
         return [a + b for a, b in zip(pA, pB)]
